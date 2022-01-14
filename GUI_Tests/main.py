@@ -1,5 +1,5 @@
 from tkinter import *
-from PIL import ImageTk, Image
+# from PIL import ImageTk, Image
 import numpy as np
 import matplotlib.animation as animation
 from matplotlib import style
@@ -10,34 +10,7 @@ import serial
 import serial.tools.list_ports
 import sys
 import glob
-
-style.use('ggplot')
-root = Tk()
-root.title("Image")
-root.iconbitmap('img/he.ico')
-
-USART_MODE = "Asynchronous"
-USART_BAUD_RATE = IntVar()
-USART_BAUD_RATE.set(115200)
-USART_WORD_LENGTH = IntVar()
-USART_WORD_LENGTH.set(8)
-USART_PARITY = StringVar()
-USART_PARITY.set('None')
-USART_STOP_BITS = IntVar()
-USART_STOP_BITS.set(1)
-USART_PORT = StringVar()
-
-entry_value = Entry(root, width=50, textvariable="0")
-entry_value.insert(0, "0")
-entry_value.grid(row=0, column=0)
-
-# a = np.arange(1, 5, 1)
-data_array = np.array([], dtype=float)
-
-fig = Figure(figsize=(5, 4), dpi=100)
-to_animate = fig.add_subplot(111)  # .plot(data_array, data_array)
-to_animate.plot(data_array, data_array)
-t = np.array([])
+from numpy import savetxt
 
 
 def serial_ports():
@@ -67,10 +40,6 @@ def serial_ports():
         except (OSError, serial.SerialException):
             pass
     return result
-
-
-available_ports = serial_ports()
-USART_PORT.set(available_ports[0])
 
 
 def refresh_ports():
@@ -104,22 +73,22 @@ def config_menu():
         ("256000", 256000)
     ]
     WORD_LENGTHS = [
-        ("5", 5),
-        ("6", 6),
-        ("7", 7),
-        ("8", 8)
+        ("5", "FIVEBITS"),
+        ("6", "SIXBITS"),
+        ("7", "SEVENBITS"),
+        ("8", "EIGHTBITS")
     ]
     PARITY = [
-        ("none", "none"),
-        ("odd", "odd"),
-        ("even", "even"),
-        ("mark", "mark"),
-        ("space", "space")
+        ("none", "PARITY_NONE"),
+        ("odd", "PARITY_ODD"),
+        ("even", "PARITY_EVEN"),
+        ("mark", "PARITY_MARK"),
+        ("space", "PARITY_SPACE")
     ]
     STOP_BITS = [
-        ("1", 1),
-        ("1.5", 1.5),
-        ("2", 2)
+        ("1", "STOPBITS_ONE"),
+        ("1.5", "STOPBITS_ONE_POINT_FIVE"),
+        ("2", "STOPBITS_TWO")
     ]
 
     Baud_Rate_frame = LabelFrame(menu, text="Baud Rate :", padx=10, pady=10)
@@ -158,8 +127,9 @@ def config_menu():
     Parity_frame.grid(row=0, column=2, sticky=W + E + S + N)
     Stop_bits_frame.grid(row=0, column=3, sticky=W + E + S + N)
 
-    port = OptionMenu(menu, USART_PORT, *available_ports)
-    port.grid(row=1, column=0, sticky=W)
+    if len(available_ports) != 0:
+        port = OptionMenu(menu, USART_PORT, *available_ports)
+        port.grid(row=1, column=0, sticky=W)
     Save_Exit_button = Button(menu, text="Save and Exit", command=menu.destroy)
     refresh = Button(menu, text="Refresh the port list", command=refresh_ports)
 
@@ -169,22 +139,178 @@ def config_menu():
 
 def animate_fig(i):
     global data_array
-    global t
-    data_array = np.append(data_array, float(entry_value.get()))
-    t = np.append(t, int(len(t - 1) + 1))
-    to_animate.clear()
-    to_animate.plot(t, data_array)
+    global time_array
+    global start_stop_bool
+    if start_stop_bool == 0:
+        animated_plot.event_source.stop()
+    else:
+        data_array = np.append(data_array, float(pow(len(time_array - 1), 2)))
+        time_array = np.append(time_array, int(len(time_array)))
+        fig_plot_animation.clear()
+        fig_plot_animation.plot(time_array, data_array)
+        Temp_var.config(text=data_array[len(data_array) - 1])
 
 
+def start_stop_conection():
+    global start_stop_bool
+    global animated_plot
+    global USART
+    global USART_MODE
+    global USART_BAUD_RATE
+    global USART_WORD_LENGTH
+    global USART_PARITY
+    global USART_STOP_BITS
+    global USART_PORT
+
+    print(USART_PORT)
+    if start_stop_bool == 0:
+        Start_Stop_button.config(text="Stop")
+        animated_plot.event_source.start()
+        start_stop_bool = 1
+        Config_button.config(state=DISABLED)
+
+        USART.Serial(port=USART_PORT.get(), baudrate=USART_BAUD_RATE.get(), bytesize=USART_WORD_LENGTH.get(),
+                     parity=USART_PARITY.get(), stopbits=USART_STOP_BITS.get())
+    elif start_stop_bool == 1:
+        Start_Stop_button.config(text="Start")
+        start_stop_bool = 0
+        animated_plot.event_source.stop()
+        Config_button.config(state=NORMAL)
+        # USART.close()
+
+
+def save_data_from_plot(file_name):
+    global data_array
+    global time_array
+    data = np.array([data_array, time_array]).transpose()
+    savetxt(file_name + '.csv', data, delimiter=',')
+
+
+def save_window_():
+    save_window = Toplevel()
+    save_window.title("Save")
+    save_window.iconbitmap('img/he.ico')
+    save_window.geometry("230x50")
+    enter_file_name = Entry(save_window, width=20, textvariable="File Name", font=("Arial", 10))
+    Save_button_top = Button(save_window, text="Save",
+                             command=lambda: [save_data_from_plot(enter_file_name.get()), save_window.destroy()])
+    label = Label(save_window, text="File Name :", font=("Arial", 10))
+    label.grid(row=0, column=0)
+    enter_file_name.grid(row=0, column=1)
+    Save_button_top.grid(row=1, column=0, columnspan=2)
+
+
+def clear_plot_and_data():
+    global data_array
+    global time_array
+    data_array = np.array([])
+    time_array = np.array([])
+    fig_plot_animation.clear()
+    canvas.draw()
+    canvas.get_tk_widget().grid(row=0, column=4, columnspan=4, rowspan=3)
+    Temp_var.config(text=0)
+
+
+def send_var():
+    return
+
+
+# PODSTAWOWE PARAMETRY DO GUI
+root = Tk()
+root.title("Image")
+root.iconbitmap('img/he.ico')
+
+# INICJOWANIE I SETOWANIE DOMYŚLNYCH WARTOŚCI KOMUNIKACJI UART I INNYCH ZMIENNYCH
+USART_MODE = "Asynchronous"
+USART_BAUD_RATE = IntVar()
+USART_WORD_LENGTH = StringVar()
+USART_PARITY = StringVar()
+USART_STOP_BITS = StringVar()
+USART_PORT = StringVar()
+
+USART_BAUD_RATE.set(115200)
+USART_WORD_LENGTH.set("EIGHTBITS")
+USART_PARITY.set('PARITY_NONE')
+USART_STOP_BITS.set("STOPBITS_ONE")
+temperature = 0
+start_stop_bool = 0
+fontsize = 15
+available_ports = serial_ports()
+
+USART = serial
+
+# USART.Serial(port='COM1', baudrate=USART_BAUD_RATE, bytesize=USART_WORD_LENGTH, parity=USART_PARITY,
+#                      stopbits=USART_STOP_BITS)
+
+if len(available_ports) == 0:
+    USART_PORT.set("no COM")
+else:
+    USART_PORT.set(available_ports[0])
+    print(str(USART_PORT.get()))
+
+# WYŚWIETLENIE WYKRESÓW I INICJALIZACJA WEKTORÓW DANYCH
+style.use('ggplot')
+data_array = np.array([0], dtype=float)
+time_array = np.array([0], dtype=float)
+fig = Figure(figsize=(5, 4), dpi=100)
+fig_plot_animation = fig.add_subplot(111)
 canvas = FigureCanvasTkAgg(fig, master=root)
+animated_plot = animation.FuncAnimation(fig, animate_fig, interval=100)
+fig.suptitle("Odpowiedź układu")
+fig.supxlabel("t [s]")
+fig.supylabel("Temperatura")
+
+# WYŚWIETLENIE AKTUALNEJ TEMPERATURY
+Temp_label = Label(root, text="Temperatura : ", font=("Arial", fontsize))
+Temp_var = Label(root, text=data_array[0], font=("Arial", fontsize))  # ,relief=SUNKEN)
+
+# ZADAWANIE WYBRANEJ TEMPERATURY
+Var_to_submit_label = Label(root, text="Zadana temperatury : ", font=("Arial", fontsize))
+Var_to_submit = Entry(root, textvariable="0", font=("Arial", fontsize), width=10)
+Var_to_submit.insert(0, "0")
+Submit_var_button = Button(root, text="Wyślij", command=send_var)
+
+# KOMUNIAKCJA UART
+frame = LabelFrame(root, text="USART", relief=SUNKEN, bg='white')
+
+# PRZYCISKI
+Config_button = Button(root, text="USART Configuration", command=config_menu, font=("Arial", 10))  # , padx=40, pady=40)
+Start_Stop_button = Button(root, text="Start", command=start_stop_conection, font=("Arial", 10))
+Save_button = Button(root, text="Save data", command=save_window_, font=("Arial", 10))
+Clear_button = Button(root, text="Clear Data", command=clear_plot_and_data, font=("Arial", 10))
+
+# POZYCJONOWANIE W GUI
+
+# canvas.get_tk_widget().grid(row=0, column=4, columnspan=4, rowspan=5)
+#
+# frame.grid(row=0, column=0, columnspan=4, sticky=W + E + S + N, pady=2)
+#
+# Var_to_submit_label.grid(row=1, column=0, columnspan=3, sticky=E + S)
+# Var_to_submit.grid(row=1, column=3, sticky=W + S + E)
+# Submit_var_button.grid(row=2, column=3, sticky=W + E + N)
+# Temp_label.grid(row=3, column=0, columnspan=3, sticky=S + E)
+# Temp_var.grid(row=3, column=3, sticky=S + W)
+#
+# Start_Stop_button.grid(row=4, column=0, sticky=W + E + S)
+# Save_button.grid(row=4, column=1, sticky=W + E + S)
+# Clear_button.grid(row=4, column=2, sticky=W + E + S)
+# Config_button.grid(row=4, column=3, sticky=W + E + S)
+# canvas.draw()
+
+canvas.get_tk_widget().grid(row=0, column=4, columnspan=4, rowspan=12)
+
+frame.grid(row=0, column=0, columnspan=4, rowspan=8, sticky=W + E + S + N, padx=2, pady=2)
+
+Var_to_submit_label.grid(row=8, column=0, columnspan=3, sticky=E + S)
+Var_to_submit.grid(row=8, column=3, sticky=W + S + E)
+Submit_var_button.grid(row=9, column=3, sticky=W + E + N)
+Temp_label.grid(row=10, column=0, columnspan=3, sticky=S + E)
+Temp_var.grid(row=10, column=3, sticky=S + W)
+
+Start_Stop_button.grid(row=11, column=0, sticky=W + E + S)
+Save_button.grid(row=11, column=1, sticky=W + E + S)
+Clear_button.grid(row=11, column=2, sticky=W + E + S)
+Config_button.grid(row=11, column=3, sticky=W + E + S)
 canvas.draw()
-canvas.get_tk_widget().grid(row=0, column=3, rowspan=2)
-
-ani = animation.FuncAnimation(fig, animate_fig, interval=1000)
-
-Config_button = Button(root, text="USART Configuration", command=config_menu)  # , padx=40, pady=40)
-Start_Stop_button = Button(root, text="USART Configuration", command=config_menu)
-
-Config_button.grid(row=2, column=2)
 
 root.mainloop()
