@@ -11,7 +11,7 @@ import serial.tools.list_ports
 import sys
 import glob
 from numpy import savetxt
-
+import time
 
 def serial_ports():
     """ Lists serial port names
@@ -73,22 +73,22 @@ def config_menu():
         ("256000", 256000)
     ]
     WORD_LENGTHS = [
-        ("5", "FIVEBITS"),
-        ("6", "SIXBITS"),
-        ("7", "SEVENBITS"),
-        ("8", "EIGHTBITS")
+        ("5", 5),
+        ("6", 6),
+        ("7", 7),
+        ("8", 8)
     ]
     PARITY = [
-        ("none", "PARITY_NONE"),
-        ("odd", "PARITY_ODD"),
-        ("even", "PARITY_EVEN"),
-        ("mark", "PARITY_MARK"),
-        ("space", "PARITY_SPACE")
+        ("none", "N"),
+        ("odd", "O"),
+        ("even", "E"),
+        ("mark", "M"),
+        ("space", "S")
     ]
     STOP_BITS = [
-        ("1", "STOPBITS_ONE"),
-        ("1.5", "STOPBITS_ONE_POINT_FIVE"),
-        ("2", "STOPBITS_TWO")
+        ("1", 1),
+        ("1.5", 1.5),
+        ("2", 2)
     ]
 
     Baud_Rate_frame = LabelFrame(menu, text="Baud Rate :", padx=10, pady=10)
@@ -141,14 +141,22 @@ def animate_fig(i):
     global data_array
     global time_array
     global start_stop_bool
+    global USART
     if start_stop_bool == 0:
         animated_plot.event_source.stop()
     else:
-        data_array = np.append(data_array, float(pow(len(time_array - 1), 2)))
-        time_array = np.append(time_array, int(len(time_array)))
-        fig_plot_animation.clear()
-        fig_plot_animation.plot(time_array, data_array)
-        Temp_var.config(text=data_array[len(data_array) - 1])
+        if USART.isOpen():
+            USART_read_value = USART.readline()
+            if USART_read_value:
+                USART_read_value = USART_read_value.decode()
+                print(USART_read_value)
+                data_array = np.append(data_array, float((5 / 1024) * float(USART_read_value)))
+                time_array = np.append(time_array, int(len(time_array)))
+                fig_plot_animation.clear()
+                fig_plot_animation.plot(time_array, data_array)
+                Temp_var.config(text=data_array[len(data_array) - 1])
+
+
 
 
 def start_stop_conection():
@@ -162,21 +170,20 @@ def start_stop_conection():
     global USART_STOP_BITS
     global USART_PORT
 
-    print(USART_PORT)
     if start_stop_bool == 0:
         Start_Stop_button.config(text="Stop")
         animated_plot.event_source.start()
         start_stop_bool = 1
         Config_button.config(state=DISABLED)
-
-        USART.Serial(port=USART_PORT.get(), baudrate=USART_BAUD_RATE.get(), bytesize=USART_WORD_LENGTH.get(),
-                     parity=USART_PARITY.get(), stopbits=USART_STOP_BITS.get())
+        if not USART.isOpen():
+            USART.open()
+        # USART.Serial(port=USART_PORT.get(), baudrate=USART_BAUD_RATE.get(), bytesize=USART_WORD_LENGTH.get(), parity=USART_PARITY.get(), stopbits=USART_STOP_BITS.get())
     elif start_stop_bool == 1:
         Start_Stop_button.config(text="Start")
         start_stop_bool = 0
         animated_plot.event_source.stop()
         Config_button.config(state=NORMAL)
-        # USART.close()
+        USART.close()
 
 
 def save_data_from_plot(file_name):
@@ -212,7 +219,11 @@ def clear_plot_and_data():
 
 
 def send_var():
-    return
+    global USART
+    global Var_to_submit
+    USART.write(Var_to_submit.get().encode())
+    # USART.write(str(Var_to_submit.get()).encode())
+
 
 
 # PODSTAWOWE PARAMETRY DO GUI
@@ -223,30 +234,35 @@ root.iconbitmap('img/he.ico')
 # INICJOWANIE I SETOWANIE DOMYŚLNYCH WARTOŚCI KOMUNIKACJI UART I INNYCH ZMIENNYCH
 USART_MODE = "Asynchronous"
 USART_BAUD_RATE = IntVar()
-USART_WORD_LENGTH = StringVar()
+USART_WORD_LENGTH = IntVar()
 USART_PARITY = StringVar()
-USART_STOP_BITS = StringVar()
+USART_STOP_BITS = IntVar()
 USART_PORT = StringVar()
 
-USART_BAUD_RATE.set(115200)
-USART_WORD_LENGTH.set("EIGHTBITS")
-USART_PARITY.set('PARITY_NONE')
-USART_STOP_BITS.set("STOPBITS_ONE")
+USART_BAUD_RATE.set(9600)
+USART_WORD_LENGTH.set(8)
+USART_PARITY.set('N')
+USART_STOP_BITS.set(1)
 temperature = 0
 start_stop_bool = 0
 fontsize = 15
 available_ports = serial_ports()
 
-USART = serial
+# USART = serial
+# print(serial.STOPBITS_ONE)
+# print(serial.STOPBITS_ONE_POINT_FIVE)
+# print(serial.PARITY_EVEN)
+# print(serial.PARITY_MARK)
+# print(serial.PARITY_SPACE)
 
-# USART.Serial(port='COM1', baudrate=USART_BAUD_RATE, bytesize=USART_WORD_LENGTH, parity=USART_PARITY,
-#                      stopbits=USART_STOP_BITS)
 
 if len(available_ports) == 0:
     USART_PORT.set("no COM")
 else:
-    USART_PORT.set(available_ports[0])
+    USART_PORT.set(available_ports[1])
     print(str(USART_PORT.get()))
+# USART = serial.Serial
+USART = serial.Serial(port=USART_PORT.get(), baudrate=USART_BAUD_RATE.get(), bytesize=USART_WORD_LENGTH.get(), parity=USART_PARITY.get(), stopbits=USART_STOP_BITS.get())
 
 # WYŚWIETLENIE WYKRESÓW I INICJALIZACJA WEKTORÓW DANYCH
 style.use('ggplot')
