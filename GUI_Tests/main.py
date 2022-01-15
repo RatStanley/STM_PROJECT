@@ -8,6 +8,8 @@ from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 import serial
 import serial.tools.list_ports
+from serial import SerialException
+
 import sys
 import glob
 from numpy import savetxt
@@ -142,19 +144,43 @@ def animate_fig(i):
     global time_array
     global start_stop_bool
     global USART
-    if start_stop_bool == 0:
-        animated_plot.event_source.stop()
-    else:
+    global itera
+    global USART_to_show
+
+    if start_stop_bool == 1:
         if USART.isOpen():
             USART_read_value = USART.readline()
-            if USART_read_value:
+            try:
                 USART_read_value = USART_read_value.decode()
-                print(USART_read_value)
-                data_array = np.append(data_array, float((5 / 1024) * float(USART_read_value)))
-                time_array = np.append(time_array, int(len(time_array)))
-                fig_plot_animation.clear()
-                fig_plot_animation.plot(time_array, data_array)
-                Temp_var.config(text=data_array[len(data_array) - 1])
+                if not USART_read_value == '':
+                    USART_to_show[7] = USART_to_show[6]
+                    USART_to_show[6] = USART_to_show[5]
+                    USART_to_show[5] = USART_to_show[4]
+                    USART_to_show[4] = USART_to_show[3]
+                    USART_to_show[3] = USART_to_show[2]
+                    USART_to_show[2] = USART_to_show[1]
+                    USART_to_show[1] = USART_to_show[0]
+                    USART_to_show[0] = float(USART_read_value)
+                    UART_Data_8.config(text=USART_to_show[7])
+                    UART_Data_7.config(text=USART_to_show[6])
+                    UART_Data_6.config(text=USART_to_show[5])
+                    UART_Data_5.config(text=USART_to_show[4])
+                    UART_Data_4.config(text=USART_to_show[3])
+                    UART_Data_3.config(text=USART_to_show[2])
+                    UART_Data_2.config(text=USART_to_show[1])
+                    UART_Data_1.config(text=USART_to_show[0])
+
+                    print(USART_read_value)
+                    data_array = np.append(data_array, float(USART_read_value))
+                    time_array = np.append(time_array, int(len(time_array)))
+                    fig_plot_animation.clear()
+                    fig_plot_animation.plot(time_array, data_array)
+                    Temp_var.config(text=data_array[len(data_array) - 1])
+            except ValueError:
+                UART_Data_1.config(text='Data could not be read, possible wrong configuration')
+
+
+
 
 
 
@@ -170,14 +196,18 @@ def start_stop_conection():
     global USART_STOP_BITS
     global USART_PORT
 
+
     if start_stop_bool == 0:
         Start_Stop_button.config(text="Stop")
         animated_plot.event_source.start()
         start_stop_bool = 1
         Config_button.config(state=DISABLED)
-        if not USART.isOpen():
-            USART.open()
-        # USART.Serial(port=USART_PORT.get(), baudrate=USART_BAUD_RATE.get(), bytesize=USART_WORD_LENGTH.get(), parity=USART_PARITY.get(), stopbits=USART_STOP_BITS.get())
+        try:
+            USART = serial.Serial(port=USART_PORT.get(), baudrate=USART_BAUD_RATE.get(), bytesize=USART_WORD_LENGTH.get(),
+                              parity=USART_PARITY.get(), stopbits=USART_STOP_BITS.get())
+        except serial.SerialException:
+            print("No connection to the device could be established")
+            start_stop_bool =0
     elif start_stop_bool == 1:
         Start_Stop_button.config(text="Start")
         start_stop_bool = 0
@@ -214,8 +244,17 @@ def clear_plot_and_data():
     time_array = np.array([])
     fig_plot_animation.clear()
     canvas.draw()
-    canvas.get_tk_widget().grid(row=0, column=4, columnspan=4, rowspan=3)
+
+    # canvas.get_tk_widget().grid(row=0, column=4, columnspan=4, rowspan=3)
     Temp_var.config(text=0)
+    UART_Data_8.config(text='')
+    UART_Data_7.config(text='')
+    UART_Data_6.config(text='')
+    UART_Data_5.config(text='')
+    UART_Data_4.config(text='')
+    UART_Data_3.config(text='')
+    UART_Data_2.config(text='')
+    UART_Data_1.config(text='')
 
 
 def send_var():
@@ -246,6 +285,8 @@ USART_STOP_BITS.set(1)
 temperature = 0
 start_stop_bool = 0
 fontsize = 15
+USART_to_show = ["","","","","","","",""]
+itera = 0
 available_ports = serial_ports()
 
 # USART = serial
@@ -259,15 +300,13 @@ available_ports = serial_ports()
 if len(available_ports) == 0:
     USART_PORT.set("no COM")
 else:
-    USART_PORT.set(available_ports[1])
-    print(str(USART_PORT.get()))
-# USART = serial.Serial
-USART = serial.Serial(port=USART_PORT.get(), baudrate=USART_BAUD_RATE.get(), bytesize=USART_WORD_LENGTH.get(), parity=USART_PARITY.get(), stopbits=USART_STOP_BITS.get())
+    USART_PORT.set(available_ports[0])
+USART = serial.Serial
 
 # WYŚWIETLENIE WYKRESÓW I INICJALIZACJA WEKTORÓW DANYCH
 style.use('ggplot')
-data_array = np.array([0], dtype=float)
-time_array = np.array([0], dtype=float)
+data_array = np.array([], dtype=float)
+time_array = np.array([], dtype=float)
 fig = Figure(figsize=(5, 4), dpi=100)
 fig_plot_animation = fig.add_subplot(111)
 canvas = FigureCanvasTkAgg(fig, master=root)
@@ -288,7 +327,24 @@ Submit_var_button = Button(root, text="Wyślij", command=send_var)
 
 # KOMUNIAKCJA UART
 frame = LabelFrame(root, text="USART", relief=SUNKEN, bg='white')
+UART_Data_1 = Label(frame,text="",bg='white')
+UART_Data_2 = Label(frame,text="",bg='white')
+UART_Data_3 = Label(frame,text="",bg='white')
+UART_Data_4 = Label(frame,text="",bg='white')
+UART_Data_5 = Label(frame,text="",bg='white')
+UART_Data_6 = Label(frame,text="",bg='white')
+UART_Data_7 = Label(frame,text="",bg='white')
+UART_Data_8 = Label(frame,text="",bg='white')
 
+
+UART_Data_1.grid(row=7,column=0,sticky=S)
+UART_Data_2.grid(row=6,column=0,sticky=S)
+UART_Data_3.grid(row=5,column=0,sticky=S)
+UART_Data_4.grid(row=4,column=0,sticky=S)
+UART_Data_5.grid(row=3,column=0,sticky=S)
+UART_Data_6.grid(row=2,column=0,sticky=S)
+UART_Data_7.grid(row=1,column=0,sticky=S)
+UART_Data_8.grid(row=0,column=0,sticky=S)
 # PRZYCISKI
 Config_button = Button(root, text="USART Configuration", command=config_menu, font=("Arial", 10))  # , padx=40, pady=40)
 Start_Stop_button = Button(root, text="Start", command=start_stop_conection, font=("Arial", 10))
