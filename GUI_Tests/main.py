@@ -15,6 +15,7 @@ import glob
 from numpy import savetxt
 import time
 
+
 def serial_ports():
     """ Lists serial port names
 
@@ -160,7 +161,7 @@ def animate_fig(i):
                     USART_to_show[3] = USART_to_show[2]
                     USART_to_show[2] = USART_to_show[1]
                     USART_to_show[1] = USART_to_show[0]
-                    USART_to_show[0] = float(USART_read_value)
+                    USART_to_show[0] = str(float(USART_read_value)) + "        " + str(len(time_array))
                     UART_Data_8.config(text=USART_to_show[7])
                     UART_Data_7.config(text=USART_to_show[6])
                     UART_Data_6.config(text=USART_to_show[5])
@@ -170,7 +171,7 @@ def animate_fig(i):
                     UART_Data_2.config(text=USART_to_show[1])
                     UART_Data_1.config(text=USART_to_show[0])
 
-                    print(USART_read_value)
+                    # print(USART_read_value)
                     data_array = np.append(data_array, float(USART_read_value))
                     time_array = np.append(time_array, int(len(time_array)))
                     fig_plot_animation.clear()
@@ -178,11 +179,6 @@ def animate_fig(i):
                     Temp_var.config(text=data_array[len(data_array) - 1])
             except ValueError:
                 UART_Data_1.config(text='Data could not be read, possible wrong configuration')
-
-
-
-
-
 
 
 def start_stop_conection():
@@ -196,18 +192,18 @@ def start_stop_conection():
     global USART_STOP_BITS
     global USART_PORT
 
-
     if start_stop_bool == 0:
         Start_Stop_button.config(text="Stop")
         animated_plot.event_source.start()
         start_stop_bool = 1
         Config_button.config(state=DISABLED)
         try:
-            USART = serial.Serial(port=USART_PORT.get(), baudrate=USART_BAUD_RATE.get(), bytesize=USART_WORD_LENGTH.get(),
-                              parity=USART_PARITY.get(), stopbits=USART_STOP_BITS.get())
+            USART = serial.Serial(port=USART_PORT.get(), baudrate=USART_BAUD_RATE.get(),
+                                  bytesize=USART_WORD_LENGTH.get(),
+                                  parity=USART_PARITY.get(), stopbits=USART_STOP_BITS.get(), timeout=1)
         except serial.SerialException:
             print("No connection to the device could be established")
-            start_stop_bool =0
+            start_stop_bool = 0
     elif start_stop_bool == 1:
         Start_Stop_button.config(text="Start")
         start_stop_bool = 0
@@ -264,7 +260,6 @@ def send_var():
     # USART.write(str(Var_to_submit.get()).encode())
 
 
-
 # PODSTAWOWE PARAMETRY DO GUI
 root = Tk()
 root.title("Image")
@@ -285,7 +280,7 @@ USART_STOP_BITS.set(1)
 temperature = 0
 start_stop_bool = 0
 fontsize = 15
-USART_to_show = ["","","","","","","",""]
+USART_to_show = ["", "", "", "", "", "", "", ""]
 itera = 0
 available_ports = serial_ports()
 
@@ -317,8 +312,10 @@ fig.supylabel("Temperatura")
 
 # WYŚWIETLENIE AKTUALNEJ TEMPERATURY
 Temp_label = Label(root, text="Temperatura : ", font=("Arial", fontsize))
-Temp_var = Label(root, text=data_array[0], font=("Arial", fontsize))  # ,relief=SUNKEN)
-
+if not len(data_array) == 0:
+    Temp_var = Label(root, text=data_array[0], font=("Arial", fontsize))  # ,relief=SUNKEN)
+else:
+    Temp_var = Label(root, text=0, font=("Arial", fontsize))  # ,relief=SUNKEN)
 # ZADAWANIE WYBRANEJ TEMPERATURY
 Var_to_submit_label = Label(root, text="Zadana temperatury : ", font=("Arial", fontsize))
 Var_to_submit = Entry(root, textvariable="0", font=("Arial", fontsize), width=10)
@@ -327,24 +324,23 @@ Submit_var_button = Button(root, text="Wyślij", command=send_var)
 
 # KOMUNIAKCJA UART
 frame = LabelFrame(root, text="USART", relief=SUNKEN, bg='white')
-UART_Data_1 = Label(frame,text="",bg='white')
-UART_Data_2 = Label(frame,text="",bg='white')
-UART_Data_3 = Label(frame,text="",bg='white')
-UART_Data_4 = Label(frame,text="",bg='white')
-UART_Data_5 = Label(frame,text="",bg='white')
-UART_Data_6 = Label(frame,text="",bg='white')
-UART_Data_7 = Label(frame,text="",bg='white')
-UART_Data_8 = Label(frame,text="",bg='white')
+UART_Data_1 = Label(frame, text="", bg='white')
+UART_Data_2 = Label(frame, text="", bg='white')
+UART_Data_3 = Label(frame, text="", bg='white')
+UART_Data_4 = Label(frame, text="", bg='white')
+UART_Data_5 = Label(frame, text="", bg='white')
+UART_Data_6 = Label(frame, text="", bg='white')
+UART_Data_7 = Label(frame, text="", bg='white')
+UART_Data_8 = Label(frame, text="", bg='white')
 
-
-UART_Data_1.grid(row=7,column=0,sticky=S)
-UART_Data_2.grid(row=6,column=0,sticky=S)
-UART_Data_3.grid(row=5,column=0,sticky=S)
-UART_Data_4.grid(row=4,column=0,sticky=S)
-UART_Data_5.grid(row=3,column=0,sticky=S)
-UART_Data_6.grid(row=2,column=0,sticky=S)
-UART_Data_7.grid(row=1,column=0,sticky=S)
-UART_Data_8.grid(row=0,column=0,sticky=S)
+UART_Data_1.grid(row=7, column=0, sticky=S)
+UART_Data_2.grid(row=6, column=0, sticky=S)
+UART_Data_3.grid(row=5, column=0, sticky=S)
+UART_Data_4.grid(row=4, column=0, sticky=S)
+UART_Data_5.grid(row=3, column=0, sticky=S)
+UART_Data_6.grid(row=2, column=0, sticky=S)
+UART_Data_7.grid(row=1, column=0, sticky=S)
+UART_Data_8.grid(row=0, column=0, sticky=S)
 # PRZYCISKI
 Config_button = Button(root, text="USART Configuration", command=config_menu, font=("Arial", 10))  # , padx=40, pady=40)
 Start_Stop_button = Button(root, text="Start", command=start_stop_conection, font=("Arial", 10))
