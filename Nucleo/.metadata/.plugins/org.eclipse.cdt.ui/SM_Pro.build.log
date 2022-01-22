@@ -1,24 +1,20 @@
-13:19:25 **** Incremental Build of configuration Debug for project SM_Pro ****
+15:29:38 **** Incremental Build of configuration Debug for project SM_Pro ****
 make -j12 all 
 arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m7 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F746xx -c -I../Core/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F7xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
 ../Core/Src/main.c: In function 'main':
-../Core/Src/main.c:113:3: warning: implicit declaration of function 'BMP280_Init' [-Wimplicit-function-declaration]
-  113 |   BMP280_Init(&hi2c1, 1, 3, 1);
-      |   ^~~~~~~~~~~
-../Core/Src/main.c:121:4: warning: implicit declaration of function 'BMP280_ReadTemperatureAndPressure' [-Wimplicit-function-declaration]
-  121 |    BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
-      |    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../Core/Src/main.c:124:29: warning: implicit declaration of function 'sprintf' [-Wimplicit-function-declaration]
-  124 |    int characters_written = sprintf(data, "%f\n", temperature);
-      |                             ^~~~~~~
-../Core/Src/main.c:124:29: warning: incompatible implicit declaration of built-in function 'sprintf'
-../Core/Src/main.c:22:1: note: include '<stdio.h>' or provide a declaration of 'sprintf'
-   21 | #include "main.h"
+../Core/Src/main.c:126:31: warning: implicit declaration of function 'sprintf' [-Wimplicit-function-declaration]
+  126 |      int characters_written = sprintf(data, "%f\n", temperature);
+      |                               ^~~~~~~
+../Core/Src/main.c:126:31: warning: incompatible implicit declaration of built-in function 'sprintf'
+../Core/Src/main.c:26:1: note: include '<stdio.h>' or provide a declaration of 'sprintf'
+   25 | #include "BMPXX80.h"
   +++ |+#include <stdio.h>
-   22 | 
-../Core/Src/main.c:111:11: warning: unused variable 'VAR' [-Wunused-variable]
-  111 |   uint8_t VAR = 20;
-      |           ^~~
+   26 | 
+../Core/Src/main.c: In function 'HAL_UART_RxCpltCallback':
+../Core/Src/main.c:442:29: warning: incompatible implicit declaration of built-in function 'sprintf'
+  442 |    int characters_written = sprintf(data, "%f\n", 100.0);
+      |                             ^~~~~~~
+../Core/Src/main.c:442:29: note: include '<stdio.h>' or provide a declaration of 'sprintf'
 arm-none-eabi-gcc -o "SM_Pro.elf" @"objects.list"   -mcpu=cortex-m7 -T"E:\Code\STM\STM_PROJECT\Nucleo\SM_Pro\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SM_Pro.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 Finished building target: SM_Pro.elf
  
@@ -26,7 +22,7 @@ arm-none-eabi-size   SM_Pro.elf
 arm-none-eabi-objdump -h -S  SM_Pro.elf  > "SM_Pro.list"
 arm-none-eabi-objcopy  -O binary  SM_Pro.elf  "SM_Pro.bin"
    text	   data	    bss	    dec	    hex	filename
-  38520	    484	   2948	  41952	   a3e0	SM_Pro.elf
+  42008	    488	   2952	  45448	   b188	SM_Pro.elf
 Finished building: default.size.stdout
  
 Finished building: SM_Pro.bin
@@ -34,5 +30,5 @@ Finished building: SM_Pro.bin
 Finished building: SM_Pro.list
  
 
-13:19:27 Build Finished. 0 errors, 5 warnings. (took 1s.22ms)
+15:29:40 Build Finished. 0 errors, 3 warnings. (took 2s.392ms)
 

@@ -259,7 +259,14 @@ def clear_plot_and_data():
 def send_var():
     global USART
     global Var_to_submit
-    USART.write(Var_to_submit.get().encode())
+    string_to_submit = ""
+    try:
+        string_to_submit = str(float(Var_to_submit.get()))
+        USART.write(string_to_submit.encode())
+    except ValueError:
+        UART_Data_2.config(text="input not a number")
+
+
     # USART.write(str(Var_to_submit.get()).encode())
 
 

@@ -22,6 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "BMPXX80.h"
 
 /* USER CODE END Includes */
 
@@ -54,7 +55,7 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-
+uint8_t VAR = 20;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -108,30 +109,28 @@ int main(void)
   /* USER CODE BEGIN 2 */
   float temperature = 0;
   int32_t pressure = 0;
-  uint8_t VAR = 20;
 
+  HAL_UART_Receive_IT(&huart3, &VAR, 1);
   BMP280_Init(&hi2c1, 1, 3, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
-  {
-    /* USER CODE END WHILE */
-	  BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
-//	  sprintf(data,"%f\n",temperature);
-	  char data[32];
-	  int characters_written = sprintf(data, "%f\n", temperature);
-	  HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 1000);
-//	  HAL_StatusTypeDef status= HAL_UART_Receive(&huart3, VAR, 1 , 1);
+    {
+      /* USER CODE END WHILE */
+
+  	  BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
+  	  //	  sprintf(data,"%f\n",temperature);
+  	  char data[32];
+  	  int characters_written = sprintf(data, "%f\n", temperature);
+  	  HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 1000);
 
 
-	  HAL_Delay(100);
-    /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
+  	  HAL_Delay(100);
+      /* USER CODE BEGIN 3 */
+    }
 }
-
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -437,7 +436,13 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void  HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	  char data[32];
+	  int characters_written = sprintf(data, "%f\n", 100.0);
+	  HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 1000);
+	  HAL_UART_Receive_IT(&huart3, &VAR, 1);
+}
 /* USER CODE END 4 */
 
 /**
