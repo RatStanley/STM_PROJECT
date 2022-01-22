@@ -36,7 +36,11 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define BMP_I2C 1
+#define BMP_SPI 0
+#define BMP_CS_GPIO_Port GPIOB
+#define BMP_CS_Pin GPIO_PIN_9
+#define COUNTOF(_BUFFER_) (sizeof((_BUFFER_))/sizeof(*(_BUFFER_)))
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -102,7 +106,11 @@ int main(void)
   MX_I2C1_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+  float temperature = 0;
+  int32_t pressure = 0;
+  uint8_t VAR = 20;
 
+  BMP280_Init(&hi2c1, 1, 3, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -110,7 +118,15 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
+//	  sprintf(data,"%f\n",temperature);
+	  char data[32];
+	  int characters_written = sprintf(data, "%f\n", temperature);
+	  HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 1000);
+//	  HAL_StatusTypeDef status= HAL_UART_Receive(&huart3, VAR, 1 , 1);
 
+
+	  HAL_Delay(100);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

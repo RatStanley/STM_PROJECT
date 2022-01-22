@@ -151,34 +151,37 @@ def animate_fig(i):
     if start_stop_bool == 1:
         if USART.isOpen():
             USART_read_value = USART.readline()
-            try:
-                USART_read_value = USART_read_value.decode()
-                if not USART_read_value == '':
-                    USART_to_show[7] = USART_to_show[6]
-                    USART_to_show[6] = USART_to_show[5]
-                    USART_to_show[5] = USART_to_show[4]
-                    USART_to_show[4] = USART_to_show[3]
-                    USART_to_show[3] = USART_to_show[2]
-                    USART_to_show[2] = USART_to_show[1]
-                    USART_to_show[1] = USART_to_show[0]
-                    USART_to_show[0] = str(float(USART_read_value)) + "        " + str(len(time_array))
-                    UART_Data_8.config(text=USART_to_show[7])
-                    UART_Data_7.config(text=USART_to_show[6])
-                    UART_Data_6.config(text=USART_to_show[5])
-                    UART_Data_5.config(text=USART_to_show[4])
-                    UART_Data_4.config(text=USART_to_show[3])
-                    UART_Data_3.config(text=USART_to_show[2])
-                    UART_Data_2.config(text=USART_to_show[1])
-                    UART_Data_1.config(text=USART_to_show[0])
+            USART_read_value = USART_read_value.decode('windows-1250')
 
-                    # print(USART_read_value)
-                    data_array = np.append(data_array, float(USART_read_value))
-                    time_array = np.append(time_array, int(len(time_array)))
-                    fig_plot_animation.clear()
-                    fig_plot_animation.plot(time_array, data_array)
-                    Temp_var.config(text=data_array[len(data_array) - 1])
+            try:
+                UART_Data_2.config(text=USART_read_value)
+                # if not USART_read_value == '':
+                USART_to_show[7] = USART_to_show[6]
+                USART_to_show[6] = USART_to_show[5]
+                USART_to_show[5] = USART_to_show[4]
+                USART_to_show[4] = USART_to_show[3]
+                USART_to_show[3] = USART_to_show[2]
+                USART_to_show[2] = USART_to_show[1]
+                USART_to_show[1] = USART_to_show[0]
+                USART_to_show[0] = str(float(USART_read_value)) + "        " + str(len(time_array))
+                UART_Data_8.config(text=USART_to_show[7])
+                UART_Data_7.config(text=USART_to_show[6])
+                UART_Data_6.config(text=USART_to_show[5])
+                UART_Data_5.config(text=USART_to_show[4])
+                UART_Data_4.config(text=USART_to_show[3])
+                UART_Data_3.config(text=USART_to_show[2])
+                UART_Data_2.config(text=USART_to_show[1])
+                UART_Data_1.config(text=USART_to_show[0])
+
+                # print(USART_read_value)
+                data_array = np.append(data_array, float(USART_read_value))
+                time_array = np.append(time_array, int(len(time_array)))
+                fig_plot_animation.clear()
+                fig_plot_animation.plot(time_array, data_array)
+                Temp_var.config(text=data_array[len(data_array) - 1])
             except ValueError:
                 UART_Data_1.config(text='Data could not be read, possible wrong configuration')
+                UART_Data_2.config(text=USART_read_value)
 
 
 def start_stop_conection():
@@ -305,7 +308,7 @@ time_array = np.array([], dtype=float)
 fig = Figure(figsize=(5, 4), dpi=100)
 fig_plot_animation = fig.add_subplot(111)
 canvas = FigureCanvasTkAgg(fig, master=root)
-animated_plot = animation.FuncAnimation(fig, animate_fig, interval=100)
+animated_plot = animation.FuncAnimation(fig, animate_fig, interval=1000)
 fig.suptitle("Odpowiedź układu")
 fig.supxlabel("t [s]")
 fig.supylabel("Temperatura")
