@@ -154,8 +154,14 @@ def animate_fig(i):
             USART_read_value = USART_read_value.decode('windows-1250')
 
             try:
-                UART_Data_2.config(text=USART_read_value)
+                # UART_Data_2.config(text=USART_read_value)
                 # if not USART_read_value == '':
+                data_array = np.append(data_array, float(USART_read_value))
+                if len(time_array) != 0:
+                    time_array = np.append(time_array, float(time_array[-1] + 0.1))
+                else:
+                    time_array = np.append(time_array, float(0.1))
+
                 USART_to_show[7] = USART_to_show[6]
                 USART_to_show[6] = USART_to_show[5]
                 USART_to_show[5] = USART_to_show[4]
@@ -163,7 +169,7 @@ def animate_fig(i):
                 USART_to_show[3] = USART_to_show[2]
                 USART_to_show[2] = USART_to_show[1]
                 USART_to_show[1] = USART_to_show[0]
-                USART_to_show[0] = str(float(USART_read_value)) + "        " + str(len(time_array))
+                USART_to_show[0] = str(float(USART_read_value)) + "        " + str(time_array[-1])
                 UART_Data_8.config(text=USART_to_show[7])
                 UART_Data_7.config(text=USART_to_show[6])
                 UART_Data_6.config(text=USART_to_show[5])
@@ -173,9 +179,6 @@ def animate_fig(i):
                 UART_Data_2.config(text=USART_to_show[1])
                 UART_Data_1.config(text=USART_to_show[0])
 
-                # print(USART_read_value)
-                data_array = np.append(data_array, float(USART_read_value))
-                time_array = np.append(time_array, int(len(time_array)))
                 fig_plot_animation.clear()
                 fig_plot_animation.plot(time_array, data_array)
                 Temp_var.config(text=data_array[len(data_array) - 1])
@@ -266,7 +269,6 @@ def send_var():
     except ValueError:
         UART_Data_2.config(text="input not a number")
 
-
     # USART.write(str(Var_to_submit.get()).encode())
 
 
@@ -315,7 +317,7 @@ time_array = np.array([], dtype=float)
 fig = Figure(figsize=(5, 4), dpi=100)
 fig_plot_animation = fig.add_subplot(111)
 canvas = FigureCanvasTkAgg(fig, master=root)
-animated_plot = animation.FuncAnimation(fig, animate_fig, interval=1000)
+animated_plot = animation.FuncAnimation(fig, animate_fig, interval=100)
 fig.suptitle("Odpowiedź układu")
 fig.supxlabel("t [s]")
 fig.supylabel("Temperatura")
@@ -343,14 +345,6 @@ UART_Data_6 = Label(frame, text="", bg='white')
 UART_Data_7 = Label(frame, text="", bg='white')
 UART_Data_8 = Label(frame, text="", bg='white')
 
-UART_Data_1.grid(row=7, column=0, sticky=S)
-UART_Data_2.grid(row=6, column=0, sticky=S)
-UART_Data_3.grid(row=5, column=0, sticky=S)
-UART_Data_4.grid(row=4, column=0, sticky=S)
-UART_Data_5.grid(row=3, column=0, sticky=S)
-UART_Data_6.grid(row=2, column=0, sticky=S)
-UART_Data_7.grid(row=1, column=0, sticky=S)
-UART_Data_8.grid(row=0, column=0, sticky=S)
 # PRZYCISKI
 Config_button = Button(root, text="USART Configuration", command=config_menu, font=("Arial", 10))  # , padx=40, pady=40)
 Start_Stop_button = Button(root, text="Start", command=start_stop_conection, font=("Arial", 10))
@@ -359,25 +353,17 @@ Clear_button = Button(root, text="Clear Data", command=clear_plot_and_data, font
 
 # POZYCJONOWANIE W GUI
 
-# canvas.get_tk_widget().grid(row=0, column=4, columnspan=4, rowspan=5)
-#
-# frame.grid(row=0, column=0, columnspan=4, sticky=W + E + S + N, pady=2)
-#
-# Var_to_submit_label.grid(row=1, column=0, columnspan=3, sticky=E + S)
-# Var_to_submit.grid(row=1, column=3, sticky=W + S + E)
-# Submit_var_button.grid(row=2, column=3, sticky=W + E + N)
-# Temp_label.grid(row=3, column=0, columnspan=3, sticky=S + E)
-# Temp_var.grid(row=3, column=3, sticky=S + W)
-#
-# Start_Stop_button.grid(row=4, column=0, sticky=W + E + S)
-# Save_button.grid(row=4, column=1, sticky=W + E + S)
-# Clear_button.grid(row=4, column=2, sticky=W + E + S)
-# Config_button.grid(row=4, column=3, sticky=W + E + S)
-# canvas.draw()
-
 canvas.get_tk_widget().grid(row=0, column=4, columnspan=4, rowspan=12)
 
 frame.grid(row=0, column=0, columnspan=4, rowspan=8, sticky=W + E + S + N, padx=2, pady=2)
+UART_Data_1.grid(row=7, column=0, sticky=S + W)
+UART_Data_2.grid(row=6, column=0, sticky=S + W)
+UART_Data_3.grid(row=5, column=0, sticky=S + W)
+UART_Data_4.grid(row=4, column=0, sticky=S + W)
+UART_Data_5.grid(row=3, column=0, sticky=S + W)
+UART_Data_6.grid(row=2, column=0, sticky=S + W)
+UART_Data_7.grid(row=1, column=0, sticky=S + W)
+UART_Data_8.grid(row=0, column=0, sticky=S + W)
 
 Var_to_submit_label.grid(row=8, column=0, columnspan=3, sticky=E + S)
 Var_to_submit.grid(row=8, column=3, sticky=W + S + E)
