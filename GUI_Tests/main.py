@@ -53,7 +53,7 @@ def refresh_ports():
 def config_menu():
     menu = Toplevel()
     menu.title("UART config")
-    menu.iconbitmap('img/he.ico')
+    menu.iconbitmap('img/icon.ico')
     global USART_BAUD_RATE
     global USART_WORD_LENGTH
     global USART_PARITY
@@ -152,15 +152,17 @@ def animate_fig(i):
         if USART.isOpen():
             USART_read_value = USART.readline()
             USART_read_value = USART_read_value.decode('windows-1250')
-
+            USART_variable = USART_read_value.split(",")
             try:
                 # UART_Data_2.config(text=USART_read_value)
                 # if not USART_read_value == '':
-                data_array = np.append(data_array, float(USART_read_value))
+                data_array = np.append(data_array, float(USART_variable[0]))
+                # time_array = np.append(time_array, float(USART_read_value[1])/1000)
                 if len(time_array) != 0:
-                    time_array = np.append(time_array, float(time_array[-1] + 0.1))
+                    time_array = np.append(time_array, time_array[-1] + float(USART_variable[1]) / 1000)
+                    # time_array = np.append(time_array, float(time_array[-1] + 0.1))
                 else:
-                    time_array = np.append(time_array, float(0.1))
+                    time_array = np.append(time_array, float(USART_variable[1])/1000)
 
                 USART_to_show[7] = USART_to_show[6]
                 USART_to_show[6] = USART_to_show[5]
@@ -169,7 +171,7 @@ def animate_fig(i):
                 USART_to_show[3] = USART_to_show[2]
                 USART_to_show[2] = USART_to_show[1]
                 USART_to_show[1] = USART_to_show[0]
-                USART_to_show[0] = str(float(USART_read_value)) + "        " + str(time_array[-1])
+                USART_to_show[0] = USART_variable[0] + "        " + time_array[-1]
                 UART_Data_8.config(text=USART_to_show[7])
                 UART_Data_7.config(text=USART_to_show[6])
                 UART_Data_6.config(text=USART_to_show[5])
@@ -183,8 +185,9 @@ def animate_fig(i):
                 fig_plot_animation.plot(time_array, data_array)
                 Temp_var.config(text=data_array[len(data_array) - 1])
             except ValueError:
+                USART_to_show[0] = 'Data could not be read, possible wrong configuration'
                 UART_Data_1.config(text='Data could not be read, possible wrong configuration')
-                UART_Data_2.config(text=USART_read_value)
+                USART_to_show[1] = USART_variable
 
 
 def start_stop_conection():
@@ -197,7 +200,7 @@ def start_stop_conection():
     global USART_PARITY
     global USART_STOP_BITS
     global USART_PORT
-
+    global USART_to_show
     if start_stop_bool == 0:
         Start_Stop_button.config(text="Stop")
         animated_plot.event_source.start()
@@ -208,7 +211,8 @@ def start_stop_conection():
                                   bytesize=USART_WORD_LENGTH.get(),
                                   parity=USART_PARITY.get(), stopbits=USART_STOP_BITS.get(), timeout=1)
         except serial.SerialException:
-            print("No connection to the device could be established")
+            # print("No connection to the device could be established")
+            USART_to_show[0] = "No connection to the device could be established"
             start_stop_bool = 0
     elif start_stop_bool == 1:
         Start_Stop_button.config(text="Start")
@@ -228,7 +232,7 @@ def save_data_from_plot(file_name):
 def save_window_():
     save_window = Toplevel()
     save_window.title("Save")
-    save_window.iconbitmap('img/he.ico')
+    save_window.iconbitmap('img/icon.ico')
     save_window.geometry("230x50")
     enter_file_name = Entry(save_window, width=20, textvariable="File Name", font=("Arial", 10))
     Save_button_top = Button(save_window, text="Save",
@@ -242,6 +246,7 @@ def save_window_():
 def clear_plot_and_data():
     global data_array
     global time_array
+    global USART_to_show
     data_array = np.array([])
     time_array = np.array([])
     fig_plot_animation.clear()
@@ -258,24 +263,36 @@ def clear_plot_and_data():
     UART_Data_2.config(text='')
     UART_Data_1.config(text='')
 
+    USART_to_show = ["", "", "", "", "", "", "", ""]
+
+
 
 def send_var():
     global USART
     global Var_to_submit
+    global USART_to_show
     string_to_submit = ""
     try:
-        string_to_submit = str(float(Var_to_submit.get()))
+
+        string_to_submit = str(float(Var_to_submit.get())) + "e"
+        for i in range(5):
+            if len(string_to_submit) < 7:
+                string_to_submit = string_to_submit + "e"
+            else:
+                break
+        print(string_to_submit)
+
         USART.write(string_to_submit.encode())
     except ValueError:
-        UART_Data_2.config(text="input not a number")
+        USART_to_show[0] = "input not a number"
 
     # USART.write(str(Var_to_submit.get()).encode())
 
 
 # PODSTAWOWE PARAMETRY DO GUI
 root = Tk()
-root.title("Image")
-root.iconbitmap('img/he.ico')
+root.title("Serial Plot Temperature")
+root.iconbitmap('img/icon.ico')
 
 # INICJOWANIE I SETOWANIE DOMYŚLNYCH WARTOŚCI KOMUNIKACJI UART I INNYCH ZMIENNYCH
 USART_MODE = "Asynchronous"
@@ -285,7 +302,7 @@ USART_PARITY = StringVar()
 USART_STOP_BITS = IntVar()
 USART_PORT = StringVar()
 
-USART_BAUD_RATE.set(9600)
+USART_BAUD_RATE.set(115200)
 USART_WORD_LENGTH.set(8)
 USART_PARITY.set('N')
 USART_STOP_BITS.set(1)
@@ -317,7 +334,7 @@ time_array = np.array([], dtype=float)
 fig = Figure(figsize=(5, 4), dpi=100)
 fig_plot_animation = fig.add_subplot(111)
 canvas = FigureCanvasTkAgg(fig, master=root)
-animated_plot = animation.FuncAnimation(fig, animate_fig, interval=100)
+animated_plot = animation.FuncAnimation(fig, animate_fig, interval=50)
 fig.suptitle("Odpowiedź układu")
 fig.supxlabel("t [s]")
 fig.supylabel("Temperatura")

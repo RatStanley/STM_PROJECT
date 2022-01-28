@@ -1,0 +1,20 @@
+/*
+ * PID.c
+ *
+ *  Created on: Jan 27, 2022
+ *      Author: Stanley
+ */
+
+#include "PID.h"
+
+float control(float e)
+{
+//	float ui = Ki*Tp*e+ui_p;
+//	float uk = Kp*e;
+//	float ud = Kd *(e-e_p);
+}
+
+void PID_init(float Tp, float Kp, float Ki, float Kd)
+{
+
+}

@@ -1,0 +1,22 @@
+/*
+ * PID.h
+ *
+ *  Created on: Jan 27, 2022
+ *      Author: Stanley
+ */
+
+#ifndef INC_PID_H_
+#define INC_PID_H_
+
+struct PID
+{
+	float k_ob;
+	float Ts;
+	float K;
+	float Ti;
+	float Td;
+
+	void PID();
+}
+
+#endif /* INC_PID_H_ */
