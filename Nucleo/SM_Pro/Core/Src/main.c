@@ -23,8 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
+#include <math.h>
 #include "BMPXX80.h"
-//#include "../BMPXX80.c"
 
 
 /* USER CODE END Includes */
@@ -67,6 +67,12 @@ const uint8_t VAR_size = 7;
 uint8_t VAR[7];// = 20;
 float wanted_temp = 30;
 uint8_t bool = 0;
+float temperature = 0;
+int32_t pressure = 0;
+int start = 0;// HAL_GetTick();
+int stop = 0;
+int time_past = 0;
+float temperature_pr= 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,7 +96,7 @@ void convert()
 	uint8_t point_num  = 0;
 	for(uint8_t i = 0; i < VAR_size; i++)
 	{
-		float temp;
+//		float temp;
 
 		if(VAR[i] == 101 )
 			break;
@@ -128,6 +134,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -146,33 +153,35 @@ int main(void)
   MX_TIM4_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  float temperature = 0;
-    int32_t pressure = 0;
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-//    HAL_TIM_Base_Start_IT(&htim3);
-    HAL_TIM_Base_Start_IT(&htim4);
-  	HAL_UART_Receive_IT(&huart3, &VAR, VAR_size);
-  	BMP280_Init(&hi2c1, 1, 3, 1);
-  	/* USER CODE END 2 */
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  HAL_TIM_Base_Start_IT(&htim4);
+  HAL_UART_Receive_IT(&huart3, VAR, VAR_size);
+  BMP280_Init(&hi2c1, 1, 3, 1);
 
-  	/* Infinite loop */
-  	/* USER CODE BEGIN WHILE */
-  	while (1)
-  	  {
-  		/* USER CODE END WHILE */
-  		int start = HAL_GetTick();
-  		HAL_Delay(100);
-  		BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
-  		char data[32];
-  		int stop = HAL_GetTick();
-		int temp = stop-start;
-  		int characters_written = sprintf(data, "%f,%i\n",temperature, temp);
-  		HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 100);
+  BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
+  temperature_pr = temperature;
+  start =  HAL_GetTick();
 
-  		/* USER CODE BEGIN 3 */
-  	  }
-    }
+  /* USER CODE END 2 */
 
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
+//	  BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
+//		char data[32];
+//		int characters_written = sprintf(data, "%f,%i\n",temperature_pr, time_past);
+//		temperature_pr = temperature;
+//		HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 100);
+//		stop =  HAL_GetTick();
+//		time_past = stop - start;
+//		start = HAL_GetTick();
+//  		HAL_Delay(100);
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
+}
 
 /**
   * @brief System Clock Configuration
@@ -321,7 +330,7 @@ static void MX_TIM3_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 1;
+  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -354,10 +363,10 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 0;
+  htim4.Init.Prescaler = 71;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 65535;
-  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.Period = 25000;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
   {
@@ -541,25 +550,35 @@ void  HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	  char data[32];
 	  convert();
 
-//	  bool = 1;
-	  int characters_written = sprintf(data, "%f\n", wanted_temp);
-	  HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 1000);
+	  bool = 1;
+//	  int characters_written = sprintf(data, "%f\n", wanted_temp);
+//	  HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 1000);
 }
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
-	static int pulse = 1;
+
+	static int pulse = 0;
 	if(bool == 1)
-		pulse = 1000;
-//	if(htim ==&htim3)
-//	{\
-//		__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1,pulse);
-//	}
-//	else
+		pulse = 999;
+
 	if(htim ==&htim4)
 	{
-			__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1,pulse);
+//		start = HAL_GetTick();
+
+		BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
+				char data[32];
+				int characters_written = sprintf(data, "%f,%i\n",temperature_pr, 100);
+				temperature_pr = temperature;
+				HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 100);
+		__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1,pulse);
+
+
+
 //		PID
+
 	}
+
+
 }
 /* USER CODE END 4 */
 

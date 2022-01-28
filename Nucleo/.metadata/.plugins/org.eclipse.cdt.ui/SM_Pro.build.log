@@ -1,34 +1,9 @@
-15:47:23 **** Incremental Build of configuration Debug for project SM_Pro ****
+20:04:01 **** Incremental Build of configuration Debug for project SM_Pro ****
 make -j12 all 
 arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m7 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F746xx -c -I../Core/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F7xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
-../Core/Src/main.c: In function 'convert':
-../Core/Src/main.c:107:45: warning: implicit declaration of function 'pow' [-Wimplicit-function-declaration]
-  107 |     wanted_temp = wanted_temp + (VAR[i]-48)*pow(10,point_num-i);
-      |                                             ^~~
-../Core/Src/main.c:107:45: warning: incompatible implicit declaration of built-in function 'pow'
-../Core/Src/main.c:27:1: note: include '<math.h>' or provide a declaration of 'pow'
-   26 | #include "BMPXX80.h"
-  +++ |+#include <math.h>
-   27 | //#include "../BMPXX80.c"
-../Core/Src/main.c:93:9: warning: unused variable 'temp' [-Wunused-variable]
-   93 |   float temp;
-      |         ^~~~
-../Core/Src/main.c: In function 'main':
-../Core/Src/main.c:154:33: warning: passing argument 2 of 'HAL_UART_Receive_IT' from incompatible pointer type [-Wincompatible-pointer-types]
-  154 |    HAL_UART_Receive_IT(&huart3, &VAR, VAR_size);
-      |                                 ^~~~
-      |                                 |
-      |                                 uint8_t (*)[7] {aka unsigned char (*)[7]}
-In file included from ../Core/Inc/stm32f7xx_hal_conf.h:410,
-                 from ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:29,
-                 from ../Core/Inc/main.h:31,
-                 from ../Core/Src/main.c:21:
-../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_uart.h:1533:75: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'uint8_t (*)[7]' {aka 'unsigned char (*)[7]'}
- 1533 | HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);
-      |                                                                  ~~~~~~~~~^~~~~
 ../Core/Src/main.c: In function 'HAL_UART_RxCpltCallback':
-../Core/Src/main.c:539:33: warning: passing argument 2 of 'HAL_UART_Receive_IT' from incompatible pointer type [-Wincompatible-pointer-types]
-  539 |    HAL_UART_Receive_IT(&huart3, &VAR, VAR_size);
+../Core/Src/main.c:548:33: warning: passing argument 2 of 'HAL_UART_Receive_IT' from incompatible pointer type [-Wincompatible-pointer-types]
+  548 |    HAL_UART_Receive_IT(&huart3, &VAR, VAR_size);
       |                                 ^~~~
       |                                 |
       |                                 uint8_t (*)[7] {aka unsigned char (*)[7]}
@@ -39,10 +14,9 @@ In file included from ../Core/Inc/stm32f7xx_hal_conf.h:410,
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_uart.h:1533:75: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'uint8_t (*)[7]' {aka 'unsigned char (*)[7]'}
  1533 | HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);
       |                                                                  ~~~~~~~~~^~~~~
-../Core/Src/main.c: In function 'HAL_TIM_PeriodElapsedCallback':
-../Core/Src/main.c:554:1: warning: multi-line comment [-Wcomment]
-  554 | // {\
-      | ^
+../Core/Src/main.c:550:9: warning: unused variable 'data' [-Wunused-variable]
+  550 |    char data[32];
+      |         ^~~~
 arm-none-eabi-gcc -o "SM_Pro.elf" @"objects.list"   -mcpu=cortex-m7 -T"E:\Code\STM\STM_PROJECT\Nucleo\SM_Pro\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SM_Pro.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 Finished building target: SM_Pro.elf
  
@@ -50,7 +24,7 @@ arm-none-eabi-size   SM_Pro.elf
 arm-none-eabi-objdump -h -S  SM_Pro.elf  > "SM_Pro.list"
 arm-none-eabi-objcopy  -O binary  SM_Pro.elf  "SM_Pro.bin"
    text	   data	    bss	    dec	    hex	filename
-  48620	    496	   3040	  52156	   cbbc	SM_Pro.elf
+  48604	    492	   3060	  52156	   cbbc	SM_Pro.elf
 Finished building: default.size.stdout
  
 Finished building: SM_Pro.bin
@@ -58,5 +32,5 @@ Finished building: SM_Pro.bin
 Finished building: SM_Pro.list
  
 
-15:47:24 Build Finished. 0 errors, 6 warnings. (took 1s.24ms)
+20:04:02 Build Finished. 0 errors, 2 warnings. (took 902ms)
 

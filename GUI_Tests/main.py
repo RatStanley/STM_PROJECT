@@ -156,34 +156,37 @@ def animate_fig(i):
             try:
                 # UART_Data_2.config(text=USART_read_value)
                 # if not USART_read_value == '':
-                data_array = np.append(data_array, float(USART_variable[0]))
-                # time_array = np.append(time_array, float(USART_read_value[1])/1000)
-                if len(time_array) != 0:
-                    time_array = np.append(time_array, time_array[-1] + float(USART_variable[1]) / 1000)
-                    # time_array = np.append(time_array, float(time_array[-1] + 0.1))
-                else:
-                    time_array = np.append(time_array, float(USART_variable[1])/1000)
+                if not len(USART_variable) < 2:
+                    # print("mam cie")
+                    data_array = np.append(data_array, float(USART_variable[0]))
+                    # time_array = np.append(time_array, float(USART_read_value[1])/1000)
+                    if len(time_array) != 0:
+                        time_array = np.append(time_array, time_array[-1] + float(USART_variable[1]) / 1000)
+                        # time_array = np.append(time_array, float(time_array[-1] + 0.1))
+                        print(float(USART_variable[1]))
+                    else:
+                        time_array = np.append(time_array, float(USART_variable[1])/1000)
 
-                USART_to_show[7] = USART_to_show[6]
-                USART_to_show[6] = USART_to_show[5]
-                USART_to_show[5] = USART_to_show[4]
-                USART_to_show[4] = USART_to_show[3]
-                USART_to_show[3] = USART_to_show[2]
-                USART_to_show[2] = USART_to_show[1]
-                USART_to_show[1] = USART_to_show[0]
-                USART_to_show[0] = USART_variable[0] + "        " + time_array[-1]
-                UART_Data_8.config(text=USART_to_show[7])
-                UART_Data_7.config(text=USART_to_show[6])
-                UART_Data_6.config(text=USART_to_show[5])
-                UART_Data_5.config(text=USART_to_show[4])
-                UART_Data_4.config(text=USART_to_show[3])
-                UART_Data_3.config(text=USART_to_show[2])
-                UART_Data_2.config(text=USART_to_show[1])
-                UART_Data_1.config(text=USART_to_show[0])
+                    USART_to_show[7] = USART_to_show[6]
+                    USART_to_show[6] = USART_to_show[5]
+                    USART_to_show[5] = USART_to_show[4]
+                    USART_to_show[4] = USART_to_show[3]
+                    USART_to_show[3] = USART_to_show[2]
+                    USART_to_show[2] = USART_to_show[1]
+                    USART_to_show[1] = USART_to_show[0]
+                    USART_to_show[0] = USART_variable[0] + "        " + str(time_array[-1])
+                    UART_Data_8.config(text=USART_to_show[7])
+                    UART_Data_7.config(text=USART_to_show[6])
+                    UART_Data_6.config(text=USART_to_show[5])
+                    UART_Data_5.config(text=USART_to_show[4])
+                    UART_Data_4.config(text=USART_to_show[3])
+                    UART_Data_3.config(text=USART_to_show[2])
+                    UART_Data_2.config(text=USART_to_show[1])
+                    UART_Data_1.config(text=USART_to_show[0])
 
-                fig_plot_animation.clear()
-                fig_plot_animation.plot(time_array, data_array)
-                Temp_var.config(text=data_array[len(data_array) - 1])
+                    fig_plot_animation.clear()
+                    fig_plot_animation.plot(time_array, data_array)
+                    Temp_var.config(text=data_array[len(data_array) - 1])
             except ValueError:
                 USART_to_show[0] = 'Data could not be read, possible wrong configuration'
                 UART_Data_1.config(text='Data could not be read, possible wrong configuration')
