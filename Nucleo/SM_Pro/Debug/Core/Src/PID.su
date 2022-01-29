@@ -1,2 +1,5 @@
-PID.c:23:6:PID_Init	32	static
-PID.c:36:7:control	32	static
+PID.c:21:7:error_corection	16	static
+PID.c:26:7:temperature_to_impuls	16	static
+PID.c:33:6:PID_Init	32	static
+PID.c:47:7:control	40	static
+PID.c:64:5:PID_PWM	48	static

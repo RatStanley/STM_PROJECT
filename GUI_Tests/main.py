@@ -139,7 +139,7 @@ def config_menu():
     Save_Exit_button.grid(row=1, column=3, sticky=W + E, pady=10)
     refresh.grid(row=1, column=2)
 
-
+# temp_1 = 0
 def animate_fig(i):
     global data_array
     global time_array
@@ -147,7 +147,7 @@ def animate_fig(i):
     global USART
     global itera
     global USART_to_show
-
+    # global  temp_1
     if start_stop_bool == 1:
         if USART.isOpen():
             USART_read_value = USART.readline()
@@ -157,13 +157,13 @@ def animate_fig(i):
                 # UART_Data_2.config(text=USART_read_value)
                 # if not USART_read_value == '':
                 if not len(USART_variable) < 2:
-                    # print("mam cie")
                     data_array = np.append(data_array, float(USART_variable[0]))
                     # time_array = np.append(time_array, float(USART_read_value[1])/1000)
                     if len(time_array) != 0:
+                        # time_array = np.append(time_array, float(USART_variable[1]) / 1000)
                         time_array = np.append(time_array, time_array[-1] + float(USART_variable[1]) / 1000)
                         # time_array = np.append(time_array, float(time_array[-1] + 0.1))
-                        print(float(USART_variable[1]))
+                        # print(float(USART_variable[1]))
                     else:
                         time_array = np.append(time_array, float(USART_variable[1])/1000)
 
@@ -183,7 +183,7 @@ def animate_fig(i):
                     UART_Data_3.config(text=USART_to_show[2])
                     UART_Data_2.config(text=USART_to_show[1])
                     UART_Data_1.config(text=USART_to_show[0])
-
+                    # temp_1 = temp_1 + 0.025
                     fig_plot_animation.clear()
                     fig_plot_animation.plot(time_array, data_array)
                     Temp_var.config(text=data_array[len(data_array) - 1])
@@ -283,7 +283,7 @@ def send_var():
                 string_to_submit = string_to_submit + "e"
             else:
                 break
-        print(string_to_submit)
+        # print(string_to_submit)
 
         USART.write(string_to_submit.encode())
     except ValueError:
@@ -337,7 +337,7 @@ time_array = np.array([], dtype=float)
 fig = Figure(figsize=(5, 4), dpi=100)
 fig_plot_animation = fig.add_subplot(111)
 canvas = FigureCanvasTkAgg(fig, master=root)
-animated_plot = animation.FuncAnimation(fig, animate_fig, interval=50)
+animated_plot = animation.FuncAnimation(fig, animate_fig, interval=25)
 fig.suptitle("Odpowiedź układu")
 fig.supxlabel("t [s]")
 fig.supylabel("Temperatura")

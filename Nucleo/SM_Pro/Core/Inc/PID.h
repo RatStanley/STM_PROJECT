@@ -7,6 +7,7 @@
 
 #ifndef INC_PID_H_
 #define INC_PID_H_
+#include <math.h>
 
 typedef struct PID_STRUCT
 {
@@ -22,12 +23,15 @@ typedef struct PID_STRUCT
 
 	float ui_p;
 	float e_p;
+	float error;
 
 
 
 }PID_STRUCT;
 
+float error_corection(float var);
+float temperature_to_impuls(float var);
 void PID_Init(PID_STRUCT *PID, float Tp, float Kp, float Ki, float Kd);
 float control(PID_STRUCT *PID,float e);
-
+int PID_PWM(PID_STRUCT *PID,float target,float current);
 #endif /* INC_PID_H_ */
