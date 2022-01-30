@@ -1,4 +1,4 @@
-19:13:55 **** Incremental Build of configuration Debug for project SM_Pro ****
+19:48:19 **** Incremental Build of configuration Debug for project SM_Pro ****
 make -j12 all 
 arm-none-eabi-gcc "../Core/Src/PID.c" -mcpu=cortex-m7 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F746xx -c -I../Core/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F7xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/PID.d" -MT"Core/Src/PID.o" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/PID.o"
 arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m7 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F746xx -c -I../Core/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F7xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
@@ -9,7 +9,7 @@ arm-none-eabi-size   SM_Pro.elf
 arm-none-eabi-objdump -h -S  SM_Pro.elf  > "SM_Pro.list"
 arm-none-eabi-objcopy  -O binary  SM_Pro.elf  "SM_Pro.bin"
    text	   data	    bss	    dec	    hex	filename
-  53628	    520	   3184	  57332	   dff4	SM_Pro.elf
+  53604	    520	   3184	  57308	   dfdc	SM_Pro.elf
 Finished building: default.size.stdout
  
 Finished building: SM_Pro.bin
@@ -17,5 +17,5 @@ Finished building: SM_Pro.bin
 Finished building: SM_Pro.list
  
 
-19:13:56 Build Finished. 0 errors, 0 warnings. (took 1s.31ms)
+19:48:22 Build Finished. 0 errors, 0 warnings. (took 3s.142ms)
 

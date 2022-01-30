@@ -66,9 +66,9 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 const uint8_t VAR_size = 7;
 int AdcValue;
 uint8_t VAR[7];// = 20;
-float wanted_temp = 30;
-float wanted_temp_UART = 30;
-float wanted_adc = 30;
+float wanted_temp = 20;
+float wanted_temp_UART = 20;
+float wanted_adc = 20;
 uint8_t bool = 0;
 float temperature = 0;
 int32_t pressure = 0;
@@ -661,7 +661,6 @@ void  HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	  HAL_UART_Receive_IT(&huart3, VAR, VAR_size);
 	  convert();
-	  bool = 1;
 }
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
@@ -675,29 +674,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 		int characters_written = sprintf(data, "%f,%i\n",temperature, 100);
 		HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 100);
 
-		if(bool == 1)
-		{
-			int u_PID = PID_PWM(&PID, wanted_temp, temperature);
+		int u_PID = PID_PWM(&PID, wanted_temp, temperature);
 
-			if(u_PID >1000){
-				u_PID = 1000;
-				HAL_GPIO_WritePin(GPIOB, LD3_Pin, 1);
-				HAL_GPIO_WritePin(GPIOB, LD2_Pin, 0);
-			}
-
-			else if(u_PID < 0){
-				u_PID = 0;
-				HAL_GPIO_WritePin(GPIOB, LD2_Pin, 1);
-				HAL_GPIO_WritePin(GPIOB, LD3_Pin, 0);
-			}
-			else
-			{
-				HAL_GPIO_WritePin(GPIOB, LD2_Pin, 0);
-				HAL_GPIO_WritePin(GPIOB, LD3_Pin, 0);
-			}
-
-			pulse = u_PID;
+		if(u_PID >1000){
+			u_PID = 1000;
+			HAL_GPIO_WritePin(GPIOB, LD3_Pin, 1);
+			HAL_GPIO_WritePin(GPIOB, LD2_Pin, 0);
 		}
+
+		else if(u_PID < 0){
+			u_PID = 0;
+			HAL_GPIO_WritePin(GPIOB, LD2_Pin, 1);
+			HAL_GPIO_WritePin(GPIOB, LD3_Pin, 0);
+		}
+		else
+		{
+			HAL_GPIO_WritePin(GPIOB, LD2_Pin, 0);
+			HAL_GPIO_WritePin(GPIOB, LD3_Pin, 0);
+		}
+
+		pulse = u_PID;
 
 		__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1,pulse);
 	}
