@@ -26,7 +26,7 @@
 #include <math.h>
 #include "BMPXX80.h"
 #include "PID.h"
-
+#include "lcd.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,6 +50,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
 
@@ -73,7 +74,9 @@ int start = 0;// HAL_GetTick();
 int stop = 0;
 int time_past = 0;
 PID_STRUCT PID;
-
+Lcd_PortType ports[] = { GPIOD, GPIOD, GPIOD, GPIOD };
+Lcd_PinType pins[] = {GPIO_PIN_4, GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7};
+Lcd_HandleTypeDef lcd;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -84,6 +87,7 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -112,6 +116,14 @@ void convert()
 				wanted_temp = wanted_temp + (VAR[i]-48)*pow(10,point_num-i);
 		}
 	}
+}
+
+int MAP_VALUE(int ValueInMin, int ValueInMax, int ValueOutMin, int ValueOutMax, int ValueIn)
+{
+	if((ValueIn > ValueInMax )|| (ValueIn< ValueInMin))
+		return 0;
+	else
+		return ((ValueOutMax - ValueOutMin) * (ValueIn - ValueInMin) / (ValueInMax - ValueInMin) + ValueOutMin);
 }
 /* USER CODE END 0 */
 
@@ -150,32 +162,51 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_I2C1_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   BMP280_Init(&hi2c1, 1, 3, 1);
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
   HAL_TIM_Base_Start_IT(&htim4);
   HAL_UART_Receive_IT(&huart3, VAR, VAR_size);
-  PID_Init(&PID, 0.1,60, 0.02, 0.014);
-  //	  BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
-  //		char data[32];
-  //		int characters_written = sprintf(data, "%f,%i\n",temperature_pr, time_past);
-  //		temperature_pr = temperature;
-  //		HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 100);
-  //		stop =  HAL_GetTick();
-  //		time_past = stop - start;
-  //		start = HAL_GetTick();
-  //  		HAL_Delay(100);
+  PID_Init(&PID, 0.1,70, 0.1, 0.014);//60 0.02
+//  HAL_ADCEx_Calibration_Start(&hadc1);
 
-  /* USER CODE END 2 */
+  lcd = Lcd_create(ports, pins, GPIOE, GPIO_PIN_2, GPIOD, GPIO_PIN_3, LCD_4_BIT_MODE);
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+  //  PID_Init(&PID, 0.1,1, 0., 0.0);
+  //  PID_Init(&PID, 0.1,40, 2, 0.014); działa ale oscylacje dziwne
+    //	  BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
+    //		char data[32];
+    //		int characters_written = sprintf(data, "%f,%i\n",temperature_pr, time_past);
+    //		temperature_pr = temperature;
+    //		HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 100);
+    //		stop =  HAL_GetTick();
+    //		time_past = stop - start;
+    //		start = HAL_GetTick();
+    //  		HAL_Delay(100);
+
+    /* USER CODE END 2 */
+
+    /* Infinite loop */
+    /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+  /* USER CODE END WHILE */
+	  char disp[32];
+	  Lcd_cursor(&lcd, 0,0);
+	  Lcd_string(&lcd, "Temp : ");
+	  sprintf(disp, "%.2f",temperature);
+	  Lcd_cursor(&lcd, 0,9);
+	  Lcd_string(&lcd, disp);
 
-    /* USER CODE BEGIN 3 */
-  }
+	  Lcd_cursor(&lcd, 1,0);
+	  Lcd_string(&lcd, "Zadana : ");
+	  sprintf(disp, "%.2f",wanted_temp);
+	  Lcd_cursor(&lcd, 1,9);
+	  Lcd_string(&lcd, disp);
+	  HAL_Delay(10);
+  /* USER CODE BEGIN 3 */
+    }
   /* USER CODE END 3 */
 }
 
@@ -233,6 +264,56 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
 }
 
 /**
@@ -465,6 +546,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -473,10 +555,24 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6
+                          |GPIO_PIN_7, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PE2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : USER_Btn_Pin */
   GPIO_InitStruct.Pin = USER_Btn_Pin;
@@ -528,6 +624,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PD3 PD4 PD5 PD6
+                           PD7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6
+                          |GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
   /*Configure GPIO pins : RMII_TX_EN_Pin RMII_TXD0_Pin */
   GPIO_InitStruct.Pin = RMII_TX_EN_Pin|RMII_TXD0_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -571,11 +676,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 			if(u_PID >1000){
 				u_PID = 1000;
 				HAL_GPIO_WritePin(GPIOB, LD3_Pin, 1);
+				HAL_GPIO_WritePin(GPIOB, LD2_Pin, 0);
 			}
 
 			else if(u_PID < 0){
 				u_PID = 0;
 				HAL_GPIO_WritePin(GPIOB, LD2_Pin, 1);
+				HAL_GPIO_WritePin(GPIOB, LD3_Pin, 0);
 			}
 			else
 			{
@@ -593,6 +700,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 //		PID
 	}
 }
+
+
 /* USER CODE END 4 */
 
 /**
