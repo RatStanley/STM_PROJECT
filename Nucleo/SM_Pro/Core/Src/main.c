@@ -64,9 +64,11 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 /* USER CODE BEGIN PV */
 
 const uint8_t VAR_size = 7;
-
+int AdcValue;
 uint8_t VAR[7];// = 20;
 float wanted_temp = 30;
+float wanted_temp_UART = 30;
+float wanted_adc = 30;
 uint8_t bool = 0;
 float temperature = 0;
 int32_t pressure = 0;
@@ -96,7 +98,7 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN 0 */
 void convert()
 {
-	wanted_temp = 0;
+	wanted_temp_UART = 0;
 	uint8_t point  = 0;
 	uint8_t point_num  = 0;
 	for(uint8_t i = 0; i < VAR_size; i++)
@@ -111,19 +113,19 @@ void convert()
 		else if(47 < VAR[i] && VAR[i] < 58)
 		{
 			if(point == 0)
-				wanted_temp = wanted_temp*10 + (VAR[i]-48);
+				wanted_temp_UART = wanted_temp_UART*10 + (VAR[i]-48);
 			else
-				wanted_temp = wanted_temp + (VAR[i]-48)*pow(10,point_num-i);
+				wanted_temp_UART = wanted_temp_UART + (VAR[i]-48)*pow(10,point_num-i);
 		}
 	}
 }
 
-int MAP_VALUE(int ValueInMin, int ValueInMax, int ValueOutMin, int ValueOutMax, int ValueIn)
+float MAP_VALUE(float ValueInMin, float ValueInMax, float ValueOutMin, float ValueOutMax, int ValueIn)
 {
-	if((ValueIn > ValueInMax )|| (ValueIn< ValueInMin))
+	if(((float)ValueIn > ValueInMax )|| ((float)ValueIn< ValueInMin))
 		return 0;
 	else
-		return ((ValueOutMax - ValueOutMin) * (ValueIn - ValueInMin) / (ValueInMax - ValueInMin) + ValueOutMin);
+		return ((ValueOutMax - ValueOutMin) * ((float)ValueIn - ValueInMin) / (ValueInMax - ValueInMin) + ValueOutMin);
 }
 /* USER CODE END 0 */
 
@@ -172,41 +174,52 @@ int main(void)
 //  HAL_ADCEx_Calibration_Start(&hadc1);
 
   lcd = Lcd_create(ports, pins, GPIOE, GPIO_PIN_2, GPIOD, GPIO_PIN_3, LCD_4_BIT_MODE);
+  int btn_released = 0;
+  int adc_UART= 0;
+  /* USER CODE END 2 */
 
-  //  PID_Init(&PID, 0.1,1, 0., 0.0);
-  //  PID_Init(&PID, 0.1,40, 2, 0.014); działa ale oscylacje dziwne
-    //	  BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
-    //		char data[32];
-    //		int characters_written = sprintf(data, "%f,%i\n",temperature_pr, time_past);
-    //		temperature_pr = temperature;
-    //		HAL_UART_Transmit(&huart3, (uint8_t*)data, characters_written, 100);
-    //		stop =  HAL_GetTick();
-    //		time_past = stop - start;
-    //		start = HAL_GetTick();
-    //  		HAL_Delay(100);
-
-    /* USER CODE END 2 */
-
-    /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
   while (1)
-  {
-  /* USER CODE END WHILE */
-	  char disp[32];
-	  Lcd_cursor(&lcd, 0,0);
-	  Lcd_string(&lcd, "Temp : ");
-	  sprintf(disp, "%.2f",temperature);
-	  Lcd_cursor(&lcd, 0,9);
-	  Lcd_string(&lcd, disp);
+     {
+     /* USER CODE END WHILE */
+         if(HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin) && btn_released == 0) //wciskasz i sprawdza czy został puszczony, wykona się raz aż puścisz
+         {
+        	 btn_released = 1;
+        	 if(adc_UART == 0)
+        		 adc_UART =1;
+        	 else
+        		 adc_UART = 0;
+         }
+         else if(!HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin))
+        	 btn_released = 0;
 
-	  Lcd_cursor(&lcd, 1,0);
-	  Lcd_string(&lcd, "Zadana : ");
-	  sprintf(disp, "%.2f",wanted_temp);
-	  Lcd_cursor(&lcd, 1,9);
-	  Lcd_string(&lcd, disp);
-	  HAL_Delay(10);
-  /* USER CODE BEGIN 3 */
-    }
+
+         HAL_ADC_Start(&hadc1);
+         HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+         AdcValue = HAL_ADC_GetValue(&hadc1);
+         float wanted_temp_adc = MAP_VALUE(0, 4095, 30, 60, AdcValue);
+
+         if(adc_UART == 0)
+			 wanted_temp = wanted_temp_UART;
+		 else
+			 wanted_temp = wanted_temp_adc;
+
+         char disp[32];
+         Lcd_cursor(&lcd, 0,0);
+         Lcd_string(&lcd, "Temp : ");
+         sprintf(disp, "%.2f",temperature);
+         Lcd_cursor(&lcd, 0,9);
+         Lcd_string(&lcd, disp);
+
+         Lcd_cursor(&lcd, 1,0);
+         Lcd_string(&lcd, "Zadana : ");
+         sprintf(disp, "%.2f",wanted_temp);
+         Lcd_cursor(&lcd, 1,9);//9
+         Lcd_string(&lcd, disp);
+         HAL_Delay(10);
+     /* USER CODE BEGIN 3 */
+     }
   /* USER CODE END 3 */
 }
 
@@ -701,6 +714,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	}
 }
 
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	AdcValue = HAL_ADC_GetValue(hadc);
+}
 
 /* USER CODE END 4 */
 

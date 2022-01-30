@@ -1,4 +1,4 @@
-15:55:30 **** Incremental Build of configuration Debug for project SM_Pro ****
+16:55:49 **** Incremental Build of configuration Debug for project SM_Pro ****
 make -j12 all 
 arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m7 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F746xx -c -I../Core/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F7xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
 arm-none-eabi-gcc -o "SM_Pro.elf" @"objects.list"   -mcpu=cortex-m7 -T"E:\Code\STM\STM_PROJECT\Nucleo\SM_Pro\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SM_Pro.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
@@ -8,17 +8,27 @@ arm-none-eabi-size   SM_Pro.elf
 arm-none-eabi-objdump -h -S  SM_Pro.elf  > "SM_Pro.list"
 arm-none-eabi-objcopy  -O binary  SM_Pro.elf  "SM_Pro.bin"
    text	   data	    bss	    dec	    hex	filename
-  52524	    516	   3180	  56220	   db9c	SM_Pro.elf
+  53588	    516	   3188	  57292	   dfcc	SM_Pro.elf
 Finished building: default.size.stdout
  
 Finished building: SM_Pro.bin
  
 Finished building: SM_Pro.list
  
-15:55:36 **** Incremental Build of configuration Debug for project SM_Pro ****
+17:01:43 **** Incremental Build of configuration Debug for project SM_Pro ****
 make -j12 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m7 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F746xx -c -I../Core/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc -I../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F7xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "SM_Pro.elf" @"objects.list"   -mcpu=cortex-m7 -T"E:\Code\STM\STM_PROJECT\Nucleo\SM_Pro\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SM_Pro.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: SM_Pro.elf
+ 
 arm-none-eabi-size   SM_Pro.elf 
+arm-none-eabi-objdump -h -S  SM_Pro.elf  > "SM_Pro.list"
+arm-none-eabi-objcopy  -O binary  SM_Pro.elf  "SM_Pro.bin"
    text	   data	    bss	    dec	    hex	filename
-  52524	    516	   3180	  56220	   db9c	SM_Pro.elf
+  53644	    520	   3184	  57348	   e004	SM_Pro.elf
 Finished building: default.size.stdout
+ 
+Finished building: SM_Pro.bin
+ 
+Finished building: SM_Pro.list
  
