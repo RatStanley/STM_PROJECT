@@ -2,7 +2,7 @@
  * PID.h
  *
  *  Created on: Jan 27, 2022
- *      Author: Stanisław Ratajczak Artur Będziechowski
+ *      Author: Stanley
  */
 
 #ifndef INC_PID_H_
@@ -30,6 +30,8 @@ typedef struct PID_STRUCT
 }PID_STRUCT;
 
 float error_corection(float var);
+float temperature_to_impuls(float var);
 void PID_Init(PID_STRUCT *PID, float Tp, float Kp, float Ki, float Kd);
+float control(PID_STRUCT *PID,float e);
 int PID_PWM(PID_STRUCT *PID,float target,float current);
 #endif /* INC_PID_H_ */

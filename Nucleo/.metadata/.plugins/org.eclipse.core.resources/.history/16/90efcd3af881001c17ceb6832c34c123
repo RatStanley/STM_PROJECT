@@ -2,14 +2,31 @@
  * PID.c
  *
  *  Created on: Jan 27, 2022
- *      Author: Stanisław Ratajczak Artur Będziechowski
+ *      Author: Stanley
  */
 
 #include "PID.h"
-
+//
+//float control(float e)
+//{
+////	float ui = Ki*Tp*e+ui_p;
+////	float uk = Kp*e;
+////	float ud = Kd *(e-e_p);
+//}
+//
+//void PID_init(float Tp, float Kp, float Ki, float Kd)
+//{
+//
+//}
 float error_corection(float var)
 {
 	return -0.2688+0.01299*var;
+//			b0+b1*x
+}
+float temperature_to_impuls(float var)
+{
+//	return -9.647*var+ 0.5157*pow(var,2)-0.005115*pow(var,3)+ 1.852e-05*pow(var,4);
+	return (12.52856*var - 326.83908);
 }
 
 
@@ -26,6 +43,8 @@ void PID_Init(PID_STRUCT *PID, float Tp, float Kp, float Ki, float Kd)
 	PID->error = 0;
 }
 
+
+
 int PID_PWM(PID_STRUCT *PID,float target,float current)
 {
 
@@ -37,15 +56,17 @@ int PID_PWM(PID_STRUCT *PID,float target,float current)
 	PID->error = PID->error + e;
 
 	float ui = 0;
-
+//
+//		ui = PID->Tp*(PID->Ki*e+PID->Ki*PID->error)/2;
 	if( e < 0.3* target)
-		ui = PID->Ki*PID->Tp*(e + PID->e_p)/2;
+		ui = PID->Ki*PID->Tp*(e + PID->e_p)/2;//+PID->ui_p;
 	float uk = PID->Kp*e ;
 	float ud = PID->Kd *(e-PID->e_p);
 
 	PID->e_p = e;
 	PID->ui_p = ui;
-
-	int uPID = (int)(ui+uk+ud);
+//
+//	return (int)(ui+uk+ud);
+	int uPID = (int)(ui+uk+ud);//-30+error_corection(current);
 	return uPID*12.53;
 }

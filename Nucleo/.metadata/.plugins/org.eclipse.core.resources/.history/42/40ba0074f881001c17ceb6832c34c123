@@ -2,7 +2,7 @@
  * PID.c
  *
  *  Created on: Jan 27, 2022
- *      Author: Stanisław Ratajczak Artur Będziechowski
+ *      Author: Stanley
  */
 
 #include "PID.h"

@@ -681,8 +681,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 
 		if(bool == 1)
 		{
+//			float u_PID = control(&PID, wanted_temp-temperature);
 			int u_PID = PID_PWM(&PID, wanted_temp, temperature);
 
+//			u_PID = (u_PID)*10;
+//			u_PID =  9.62264*u_PID + 8.49057;//(12.52856*u_PID);// - 326.83908);
 			if(u_PID >1000){
 				u_PID = 1000;
 				HAL_GPIO_WritePin(GPIOB, LD3_Pin, 1);
@@ -711,10 +714,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	}
 }
 
-//void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-//{
-//	AdcValue = HAL_ADC_GetValue(hadc);
-//}
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	AdcValue = HAL_ADC_GetValue(hadc);
+}
 
 /* USER CODE END 4 */
 
