@@ -1,16 +1,17 @@
-# STM_PROJECT
-Projekt na Systemy Mikroprocesorowe 
+# STM PROJECT
+Project for the course Microprocessor Systems
 
-Projekt ma na celu wykonanie automatycznej regulacji za pomocą mikroprocesora.
+The purpose of the project is to perform automatic temperature adjustment using a microprocessor.
 
-W projekcie wykorzystywano:
-- Płytkę Nucleo-F746ZG
-- Rezyostor 24 Ohm wykorzystany jako grzałka
-- tranzystor bipolarny BC547B
-- tranzystor MOSFET IRL540N
-- zasilacz laboratoryjny (napięcie 10V)
-- rezyostory i potencjometry drugorzędne
-- wyświetlacz LCD
+The project uses:
+- Evaluation board  Nucleo-F746ZG
+- Resistor 24 Ohm used as a heater
+- Bipolar Transistor BC547B
+- Transistor MOSFET IRL540N
+- Power supply (Voltage 10V)
+- Resistors and potentiometer
+- LCD display
 
-Sterowanie wykonano za pomocą regulatora PID w języku C.
-GUI wykorzystane do przedstawienia wykników powstało za pomocą języka Python wraz z biblioteką Tkinter.
+
+The control was made using the PID controller in C language.
+The GUI used to present the results was created using the Python language with the Tkinter library.
